@@ -1,0 +1,18 @@
+# Log files
+logs/*.log
+*.log
+
+# Temporary and backup files
+*.bak
+*.bak.*
+*.tmp
+*.swp
+*~
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# OS specific
+.DS_Store
+Thumbs.db
