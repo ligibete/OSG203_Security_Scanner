@@ -5,15 +5,15 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Nạp thư viện lõi
 # shellcheck source=core/colors.sh
-source "${SCRIPT_DIR}/core/colors.sh"
+source "${BASE_DIR}/core/colors.sh"
 # shellcheck source=core/logger.sh
-source "${SCRIPT_DIR}/core/logger.sh"
+source "${BASE_DIR}/core/logger.sh"
 # shellcheck source=core/utils.sh
-source "${SCRIPT_DIR}/core/utils.sh"
+source "${BASE_DIR}/core/utils.sh"
 
 require_root
 
@@ -45,7 +45,7 @@ MODULES=(
 )
 
 for mod in "${MODULES[@]}"; do
-    MOD_PATH="${SCRIPT_DIR}/scripts/${mod}"
+    MOD_PATH="${BASE_DIR}/scripts/${mod}"
     if [[ -x "${MOD_PATH}" ]]; then
         bash "${MOD_PATH}"
     else

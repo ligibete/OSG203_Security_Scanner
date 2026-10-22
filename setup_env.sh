@@ -5,15 +5,15 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Nạp thư viện lõi
 # shellcheck source=core/colors.sh
-source "${SCRIPT_DIR}/core/colors.sh"
+source "${BASE_DIR}/core/colors.sh"
 # shellcheck source=core/logger.sh
-source "${SCRIPT_DIR}/core/logger.sh"
+source "${BASE_DIR}/core/logger.sh"
 # shellcheck source=core/utils.sh
-source "${SCRIPT_DIR}/core/utils.sh"
+source "${BASE_DIR}/core/utils.sh"
 
 require_root
 
@@ -120,7 +120,7 @@ ENV_PROFILE="/etc/profile.d/osg203_env.sh"
 log_info "Thiết lập biến môi trường chuẩn hóa tại ${ENV_PROFILE}..."
 cat << EOF > "${ENV_PROFILE}"
 # OSG203 Security Scanner Environment Setup
-export OSG_PROJECT_ROOT="${SCRIPT_DIR}"
+export OSG_PROJECT_ROOT="${BASE_DIR}"
 export PATH="\$PATH:\${OSG_PROJECT_ROOT}/scripts"
 alias osg-scan="sudo \${OSG_PROJECT_ROOT}/main.sh"
 alias osg-verify="\${OSG_PROJECT_ROOT}/verify_system.sh"
@@ -130,9 +130,9 @@ chmod 0644 "${ENV_PROFILE}"
 log_pass "Đã tạo biến môi trường và alias điều hành thành công."
 
 # Phân quyền thư mục dự án
-log_info "Chuẩn hóa phân quyền thư mục dự án: ${SCRIPT_DIR}..."
-chmod -R 755 "${SCRIPT_DIR}/core" "${SCRIPT_DIR}/scripts" 2>/dev/null || true
-chmod +x "${SCRIPT_DIR}"/*.sh 2>/dev/null || true
+log_info "Chuẩn hóa phân quyền thư mục dự án: ${BASE_DIR}..."
+chmod -R 755 "${BASE_DIR}/core" "${BASE_DIR}/scripts" 2>/dev/null || true
+chmod +x "${BASE_DIR}"/*.sh 2>/dev/null || true
 log_pass "Hoàn thành chuẩn hóa phân quyền thư mục dự án."
 
 echo -e "\n${BOLD}${BGREEN}>>> HOÀN THÀNH THIẾT LẬP MÔI TRƯỜNG CHO TASK 1.5 & TASK 1.6! <<<${NC}\n"

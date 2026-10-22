@@ -6,8 +6,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${BASE_DIR}/.." && pwd)"
 
 # shellcheck source=../core/colors.sh
 source "${PROJECT_ROOT}/core/colors.sh"

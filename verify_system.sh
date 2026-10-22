@@ -5,15 +5,15 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Nạp thư viện lõi
 # shellcheck source=core/colors.sh
-source "${SCRIPT_DIR}/core/colors.sh"
+source "${BASE_DIR}/core/colors.sh"
 # shellcheck source=core/logger.sh
-source "${SCRIPT_DIR}/core/logger.sh"
+source "${BASE_DIR}/core/logger.sh"
 # shellcheck source=core/utils.sh
-source "${SCRIPT_DIR}/core/utils.sh"
+source "${BASE_DIR}/core/utils.sh"
 
 TOTAL_CHECKS=0
 PASSED_CHECKS=0
@@ -174,7 +174,7 @@ log_header "6. KIỂM TRA CẤU TRÚC THƯ MỤC DỰ ÁN & GIT"
 
 EXPECTED_DIRS=("core" "scripts" "configs" "docs" "logs")
 for dir in "${EXPECTED_DIRS[@]}"; do
-    if [[ -d "${SCRIPT_DIR}/${dir}" ]]; then
+    if [[ -d "${BASE_DIR}/${dir}" ]]; then
         report_item "PASS" "Thư mục dự án" "${dir}/ tồn tại hợp lệ."
     else
         report_item "FAIL" "Thư mục dự án" "Thiếu thư mục ${dir}/."
@@ -182,9 +182,9 @@ for dir in "${EXPECTED_DIRS[@]}"; do
 done
 
 # Kiểm tra kho mã nguồn Git
-if [[ -d "${SCRIPT_DIR}/.git" ]]; then
-    GIT_BRANCH="$(git -C "${SCRIPT_DIR}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")"
-    GIT_REMOTE="$(git -C "${SCRIPT_DIR}" remote get-url origin 2>/dev/null || echo "none")"
+if [[ -d "${BASE_DIR}/.git" ]]; then
+    GIT_BRANCH="$(git -C "${BASE_DIR}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")"
+    GIT_REMOTE="$(git -C "${BASE_DIR}" remote get-url origin 2>/dev/null || echo "none")"
     report_item "PASS" "Cấu hình Git Repository" "Đã khởi tạo Git (Nhánh: ${GIT_BRANCH}, Remote: ${GIT_REMOTE})"
 else
     report_item "FAIL" "Cấu hình Git Repository" "Chưa khởi tạo Git repository."
