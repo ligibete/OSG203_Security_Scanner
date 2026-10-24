@@ -50,7 +50,8 @@ fi
 
 # 3. Kiểm tra MaxAuthTries
 log_info "[SEC-SSH-03] Kiểm tra số lần thử đăng nhập tối đa (MaxAuthTries)..."
-MAX_AUTH=$(grep -E '^\s*MaxAuthTries' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | tail -n 1 || echo "6")
+MAX_AUTH=$(grep -E '^\s*MaxAuthTries' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | grep -oE '[0-9]+' | head -n 1|| echo "6")
+MAX_AUTH=$(echo $MAX_AUTH | awk '{print $1}')
 
 if [[ "${MAX_AUTH}" -le 4 ]]; then
     log_pass "MaxAuthTries = ${MAX_AUTH} (Đạt chuẩn CIS: <= 4)."
