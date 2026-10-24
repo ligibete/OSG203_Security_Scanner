@@ -28,7 +28,8 @@ fi
 
 # 1. Kiểm tra PermitRootLogin
 log_info "[SEC-SSH-01] Kiểm tra chính sách đăng nhập root qua SSH (PermitRootLogin)..."
-PERMIT_ROOT=$(grep -E '^\s*PermitRootLogin' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | tail -n 1 || echo "prohibit-password")
+PERMIT_ROOT=$(grep -E '^\s*PermitRootLogin' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | head -n 1 |awk '{print $1}' || echo "prohibit-password")
+PERMIT_ROOT=$(echo $PERMIT_ROOT | awk '{print $1}')
 
 if [[ "${PERMIT_ROOT}" == "no" ]]; then
     log_pass "PermitRootLogin được đặt là 'no' (Cấm hoàn toàn đăng nhập root qua SSH - Chuẩn CIS)."
@@ -40,7 +41,8 @@ fi
 
 # 2. Kiểm tra PermitEmptyPasswords
 log_info "[SEC-SSH-02] Kiểm tra cho phép mật khẩu rỗng (PermitEmptyPasswords)..."
-EMPTY_PASS=$(grep -E '^\s*PermitEmptyPasswords' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | tail -n 1 || echo "no")
+EMPTY_PASS=$(grep -E '^\s*PermitEmptyPasswords' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | head -n 1 | awk '{print $1}' || echo "no")
+EMPTY_PASS=$(echo $EMPTY_PASS | awk '{print $1}')
 
 if [[ "${EMPTY_PASS}" == "no" ]]; then
     log_pass "PermitEmptyPasswords được đặt là 'no' (Đạt chuẩn)."
@@ -62,6 +64,8 @@ fi
 # 4. Kiểm tra Cổng SSH (Port)
 log_info "[SEC-SSH-04] Rà soát cổng hoạt động của SSH..."
 SSH_PORT=$(grep -E '^\s*Port' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | tail -n 1 || echo "22")
+SSH_PORT=$(echo $SSH_PORT | awk '{print $1}')
+
 if [[ "${SSH_PORT}" == "22" ]]; then
     log_info "SSH đang chạy trên cổng mặc định 22 (Có thể đổi sang cổng khác để giảm bớt quét rà tự động)."
 else
@@ -71,6 +75,8 @@ fi
 # 5. Kiểm tra X11Forwarding
 log_info "[SEC-SSH-05] Kiểm tra chuyển tiếp giao diện đồ họa X11 (X11Forwarding)..."
 X11_FWD=$(grep -E '^\s*X11Forwarding' "${SSHD_CONFIG}" /etc/ssh/sshd_config.d/*.conf 2>/dev/null | awk '{print $2}' | tail -n 1 || echo "no")
+X11_FWD=$(echo $X11_FWD | awk '{print $1}')
+
 if [[ "${X11_FWD}" == "no" ]]; then
     log_pass "X11Forwarding được vô hiệu hóa (Đạt chuẩn máy chủ)."
 else
