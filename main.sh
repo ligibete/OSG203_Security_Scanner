@@ -83,11 +83,15 @@ MODULES=(
 for mod in "${MODULES[@]}"; do
     MOD_PATH="${BASE_DIR}/scripts/${mod}"
     if [[ -x "${MOD_PATH}" ]]; then
-        bash "${MOD_PATH}"
+        # Thêm dấu & ở cuối để chạy ngầm (Background Job / Parallel)
+        bash "${MOD_PATH}" &
     else
         log_warn "Không tìm thấy hoặc chưa cấp quyền thực thi cho module: ${mod}"
     fi
 done
+
+# BẮT BUỘC: Đợi tất cả các tiến trình chạy ngầm kết thúc rồi mới tổng kết
+wait
 
 END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))
