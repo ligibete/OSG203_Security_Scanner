@@ -56,7 +56,7 @@ log_fail() {
     	echo "[${ts}] [FAIL] [HIGH] ${msg}" >> "${SCAN_LOG_FILE}"
 
 	# Bắn Pop-up cảnh báo Terminal (Task 3.24)
-        whiptail --title "🚨 OSG203: CẢNH BÁO BẢO MẬT" --msgbox "PHÁT HIỆN LỖ HỔNG [HIGH]:\n\n${msg}\n\nVui lòng kiểm tra file log ngay lập tức!" 12 70
+        [[ -t 0 ]] && [[ -z "${FLASK_RUN:-}" ]] && whiptail --title "🚨 OSG203: CẢNH BÁO BẢO MẬT" --msgbox "PHÁT HIỆN LỖ HỔNG [HIGH]:\n\n${msg}\n\nVui lòng kiểm tra file log ngay lập tức!" 12 70
 
     elif [[ "$risk_level" == "MEDIUM" ]]; then
         echo -e "${BYELLOW}[FAIL] [RỦI RO: MEDIUM] ${msg}${NC}"
