@@ -44,13 +44,27 @@ log_warn() {
     echo "[${ts}] [WARN] ${msg}" >> "${SCAN_LOG_FILE}"
 }
 
-# Hàm log lỗi / vi phạm (FAIL)
+# Hàm log lỗi / vi phạm (FAIL) - Bổ sung gán nhãn rủi ro (Task 3.22)
 log_fail() {
     local msg="$1"
+    local risk_level="${2:-}" # Bắt tham số thứ 2 (HIGH/MEDIUM/LOW)
     local ts
     ts="$(get_timestamp)"
-    echo -e "${TAG_FAIL} ${msg}"
-    echo "[${ts}] [FAIL] ${msg}" >> "${SCAN_LOG_FILE}"
+    
+    if [[ "$risk_level" == "HIGH" ]]; then
+        echo -e "${BRED}[FAIL] [RỦI RO: HIGH] ${msg}${NC}"
+        echo "[${ts}] [FAIL] [HIGH] ${msg}" >> "${SCAN_LOG_FILE}"
+    elif [[ "$risk_level" == "MEDIUM" ]]; then
+        echo -e "${BYELLOW}[FAIL] [RỦI RO: MEDIUM] ${msg}${NC}"
+        echo "[${ts}] [FAIL] [MEDIUM] ${msg}" >> "${SCAN_LOG_FILE}"
+    elif [[ "$risk_level" == "LOW" ]]; then
+        echo -e "${BCYAN}[FAIL] [RỦI RO: LOW] ${msg}${NC}"
+        echo "[${ts}] [FAIL] [LOW] ${msg}" >> "${SCAN_LOG_FILE}"
+    else
+        # Nếu không truyền mức độ, dùng mặc định
+        echo -e "${TAG_FAIL} ${msg}"
+        echo "[${ts}] [FAIL] ${msg}" >> "${SCAN_LOG_FILE}"
+    fi
 }
 
 # In tiêu đề phần mục
