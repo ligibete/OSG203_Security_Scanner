@@ -17,7 +17,7 @@ source "${BASE_DIR}/core/utils.sh"
 
 # ... (các dòng source ở trên) ...
 
-require_root
+require_root "$@"
 
 # ==========================================
 # XỬ LÝ THAM SỐ DÒNG LỆNH (TASK 3.20)
