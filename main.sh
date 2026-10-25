@@ -15,7 +15,43 @@ source "${BASE_DIR}/core/logger.sh"
 # shellcheck source=core/utils.sh
 source "${BASE_DIR}/core/utils.sh"
 
+# ... (các dòng source ở trên) ...
+
 require_root
+
+# ==========================================
+# XỬ LÝ THAM SỐ DÒNG LỆNH (TASK 3.20)
+# ==========================================
+while getopts "hm:" flag; do
+    case "${flag}" in
+        h)
+            echo "============================================="
+            echo "    OSG203 SECURITY SCANNER - TRỢ GIÚP       "
+            echo "============================================="
+            echo "Sử dụng: sudo ./main.sh [tham số]"
+            echo "Các tham số hỗ trợ:"
+            echo "  -h      : Hiển thị bảng hướng dẫn này và thoát"
+            echo "  -m <id> : Chỉ quét riêng một Module (Ví dụ: -m 1)"
+            echo "============================================="
+            exit 0
+            ;;
+        m)
+            echo "Tính năng quét độc lập Module ${OPTARG} đang được kích hoạt..."
+            # (Nhóm có thể bổ sung logic vào đây sau)
+            exit 0
+            ;;
+        *)
+            echo "[LỖI] Tham số không hợp lệ. Vui lòng dùng lệnh: sudo ./main.sh -h"
+            exit 1
+            ;;
+    esac
+done
+
+# === ĐOẠN VẼ LOGO CŨ CỦA BẠN NẰM Ở DƯỚI NÀY ===
+echo -e "${BOLD}${BBLUE}"
+cat << "EOF"
+# ... (phần logo ASCII) ...
+
 
 echo -e "${BOLD}${BBLUE}"
 cat << "EOF"
