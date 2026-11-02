@@ -3,464 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSG203 // TACTICAL SCANNER</title>
-    <!-- Technical & Monospace Fonts -->
+    <title>OSG203 // Tactical Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            /* Tactical SOC Palette */
-            --bg-dark: #05050A;
-            --bg-panel: rgba(10, 15, 25, 0.7);
-            --bg-detail: rgba(15, 20, 35, 0.9);
-            --cyan: #00f3ff;
-            --cyan-dim: rgba(0, 243, 255, 0.2);
-            --red: #ff003c;
-            --yellow: #ffb700;
-            --green: #00ff66;
-            --grid-line: rgba(0, 243, 255, 0.05);
-            --text-main: #c0caf5;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background-color: var(--bg-dark);
-            /* Sci-Fi Grid Background */
-            background-image: 
-                linear-gradient(var(--grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: var(--text-main);
-            font-family: 'Rajdhani', sans-serif;
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-
-        /* Typography & Glow */
-        h1, h2, h3 { font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+        body { font-family: 'Rajdhani', sans-serif; background-color: #05050A; color: #fff; transition: background 0.3s, color 0.3s; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .glow-cyan { color: var(--cyan); text-shadow: 0 0 8px rgba(0, 243, 255, 0.6); }
-        .glow-red { color: var(--red); text-shadow: 0 0 8px rgba(255, 0, 60, 0.6); }
-        .glow-yellow { color: var(--yellow); text-shadow: 0 0 8px rgba(255, 183, 0, 0.6); }
-        .glow-green { color: var(--green); text-shadow: 0 0 8px rgba(0, 255, 102, 0.6); }
-
-        /* Header */
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--cyan-dim);
-            padding-bottom: 15px; margin-bottom: 25px;
-            position: relative;
-        }
-        header::after {
-            content: ''; position: absolute; bottom: -1px; left: 0; width: 200px; height: 1px; background: var(--cyan);
-            box-shadow: 0 0 10px var(--cyan);
-        }
-        .header-title { display: flex; align-items: center; font-size: 1.8rem; color: var(--cyan); }
-        .live-dot {
-            width: 10px; height: 10px; background-color: var(--red);
-            border-radius: 50%; margin-left: 15px;
-            box-shadow: 0 0 10px var(--red);
-            animation: blink 1.5s infinite;
-        }
-        .header-stats { text-align: right; font-size: 1.1rem; color: var(--cyan); }
-        .stat-value { font-weight: 700; margin-left: 8px; }
-
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* Main Layout Grid */
-        .hud-layout {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 25px;
-            flex: 1;
-            align-items: start;
-        }
-
-        /* Tactical Panels (Clip-path Chamfered Edges) */
-        .panel {
-            background: var(--bg-panel);
-            backdrop-filter: blur(5px);
-            border: 1px solid var(--cyan-dim);
-            padding: 20px;
-            position: relative;
-            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
-        }
-        .panel::before { content: ''; position: absolute; top: 0; left: 0; width: 15px; height: 2px; background: var(--cyan); }
-        .panel::after { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 15px; background: var(--cyan); }
-
-        /* Left Panel: Monitor & Terminal */
-        .radar-box {
-            display: flex; justify-content: center; align-items: center;
-            height: 220px; margin: 20px 0;
-        }
+        
         .radar {
-            width: 180px; height: 180px; border-radius: 50%;
-            border: 1px solid var(--cyan);
-            background: repeating-radial-gradient(transparent, transparent 19px, var(--cyan-dim) 20px);
+            width: 150px; height: 150px; border-radius: 50%;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            background: 
+                linear-gradient(90deg, transparent 49.5%, rgba(6, 182, 212, 0.5) 50%, transparent 50.5%),
+                linear-gradient(0deg, transparent 49.5%, rgba(6, 182, 212, 0.5) 50%, transparent 50.5%);
             position: relative; overflow: hidden;
-            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.2);
         }
-        .radar::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--cyan-dim); }
-        .radar::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--cyan-dim); }
-        .radar-sweep {
-            position: absolute; top: 0; left: 50%; width: 100%; height: 50%;
-            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.4));
+        .radar::before {
+            content: ''; position: absolute; top: 0; left: 50%;
+            width: 50%; height: 50%;
+            background: linear-gradient(45deg, rgba(6, 182, 212, 0.8) 0%, transparent 50%);
             transform-origin: bottom left;
-            animation: sweep 2.5s linear infinite;
+            animation: scan 2s linear infinite;
         }
-        @keyframes sweep { to { transform: rotate(360deg); } }
+        @keyframes scan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .terminal {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--cyan-dim);
-            padding: 12px; font-size: 0.85rem;
-            height: 200px; overflow-y: auto;
-            display: flex; flex-direction: column;
-            gap: 4px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        .detail-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .term-prefix { color: var(--cyan); margin-right: 8px; }
-
-        /* Right Panel: Threat Intel Table */
-        .panel-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; border-bottom: 1px solid var(--cyan-dim); padding-bottom: 10px;
-        }
-        
-        .btn-scan {
-            background: var(--cyan-dim); color: var(--cyan);
-            border: 1px solid var(--cyan);
-            padding: 8px 24px; font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; font-weight: 700;
-            text-transform: uppercase; cursor: pointer;
-            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            transition: all 0.2s;
-        }
-        .btn-scan:hover:not(:disabled) {
-            background: var(--cyan); color: #000; box-shadow: 0 0 15px var(--cyan);
-        }
-        .btn-scan:disabled { opacity: 0.5; cursor: wait; border-color: #555; color: #555; }
-
-        /* Accordion Table Styling (Hybrid UX) */
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th {
-            color: var(--cyan); font-weight: 600; padding: 12px 16px;
-            border-bottom: 1px solid var(--cyan); text-transform: uppercase; letter-spacing: 1px;
-        }
-        
-        /* Main Row (Clickable) */
-        .tr-main {
-            cursor: pointer; transition: all 0.2s;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .tr-main:hover {
-            background: rgba(0, 243, 255, 0.05);
-        }
-        .tr-main td { padding: 14px 16px; font-size: 0.95rem; }
-        .row-chevron { color: var(--cyan); transition: transform 0.3s; display: inline-block; width: 15px;}
-        .tr-main.active { background: rgba(0, 243, 255, 0.08); border-bottom: none; }
-        .tr-main.active .row-chevron { transform: rotate(90deg); }
-
-        /* Badges */
-        .badge { padding: 4px 10px; border: 1px solid; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
-        .badge.critical { border-color: var(--red); color: var(--red); background: rgba(255, 0, 60, 0.1); box-shadow: 0 0 5px rgba(255, 0, 60, 0.3); }
-        .badge.warning { border-color: var(--yellow); color: var(--yellow); background: rgba(255, 183, 0, 0.1); box-shadow: 0 0 5px rgba(255, 183, 0, 0.3); }
-        .badge.secure { border-color: var(--green); color: var(--green); background: rgba(0, 255, 102, 0.1); box-shadow: 0 0 5px rgba(0, 255, 102, 0.3); }
-
-        /* Detail Row (Accordion Content) */
-        .tr-detail { display: none; }
-        .tr-detail.open { display: table-row; }
-        .tr-detail td { padding: 0; border-bottom: 1px solid var(--cyan-dim); }
-        
-        /* Detail Container matching Image 2 Layout */
-        .detail-container {
-            background: var(--bg-detail);
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
-            border-left: 2px solid var(--cyan);
+        .accordion-content.open .detail-wrapper {
+            max-height: 600px;
         }
 
-        .info-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .info-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
-        .info-box {
-            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 12px; font-size: 0.9rem; color: #fff;
-            border-radius: 4px;
-        }
-        .info-box.danger { border-color: rgba(255,0,60,0.4); color: #ff8a9f; }
-
-        /* Code Remediation Area */
-        .remediation-area { display: flex; flex-direction: column; gap: 8px; height: 100%; }
-        .code-box-wrapper {
-            position: relative; flex: 1;
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(0, 255, 102, 0.3);
-            border-radius: 4px; padding: 15px;
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        .code-box-wrapper pre {
-            color: var(--green); font-size: 0.85rem; white-space: pre-wrap; margin: 0; line-height: 1.5;
-        }
-        
-        /* Interactive Copy Button */
-        .btn-copy {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0, 255, 102, 0.1); border: 1px solid var(--green);
-            color: var(--green); padding: 4px 12px; font-family: 'Rajdhani', sans-serif;
-            font-size: 0.8rem; font-weight: bold; cursor: pointer;
-            opacity: 0; transform: translateY(-5px); transition: all 0.2s ease;
-            border-radius: 2px;
-        }
-        .code-box-wrapper:hover .btn-copy { opacity: 1; transform: translateY(0); }
-        .btn-copy:hover { background: var(--green); color: #000; }
-        .btn-copy.success { background: var(--cyan); border-color: var(--cyan); color: #000; }
-
+        /* Light Theme Styles */
+        body.light-mode { background-color: #E2E8F0; color: #0F172A; }
+        body.light-mode header { border-color: #94A3B8; }
+        body.light-mode .panel-box { background-color: #FFFFFF !important; border-color: #CBD5E1 !important; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        body.light-mode h1, body.light-mode h2, body.light-mode .text-cyan-400 { color: #0284C7 !important; }
+        body.light-mode #terminal-log { background-color: #0F172A; color: #34D399; border-color: #CBD5E1; }
+        body.light-mode table thead { border-color: #CBD5E1; color: #0284C7; }
+        body.light-mode tr.border-b { border-color: #E2E8F0 !important; }
+        body.light-mode tbody tr { color: #1E293B !important; font-weight: 600; }
+        body.light-mode .accordion-content { background-color: #F8FAFC !important; }
+        body.light-mode .detail-wrapper div.bg-black\/60 { background-color: #F1F5F9 !important; border-color: #CBD5E1 !important; }
+        body.light-mode .detail-wrapper .bg-black { background-color: #0F172A !important; color: #34D399 !important; border-color: #CBD5E1 !important; }
+        body.light-mode #scan-btn { border-color: #0284C7; color: #0284C7; }
+        body.light-mode #scan-btn:hover { background-color: #0284C7; color: #FFFFFF; }
     </style>
 </head>
-<body>
+<body class="min-h-screen p-6 flex flex-col justify-center bg-[linear-gradient(rgba(0,15,20,0.8),rgba(0,15,20,0.8)),url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')]">
+    
+    <div class="max-w-7xl mx-auto w-full flex flex-col gap-6">
+        <header class="flex justify-between items-end border-b border-cyan-800 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-cyan-400 tracking-widest drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+                    OSG203 // TACTICAL SCANNER <span class="inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse ml-2"></span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-6">
+                <button onclick="toggleTheme()" id="theme-btn" class="flex items-center gap-2 px-3.5 py-2 border border-cyan-500 text-cyan-400 text-xs font-bold uppercase tracking-wider rounded hover:bg-cyan-500 hover:text-black transition-colors shadow-sm">
+                    <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <span id="theme-text">LIGHT MODE</span>
+                </button>
+                <div class="text-right">
+                    <div class="font-bold text-sm tracking-widest">THREAT LEVEL: <span id="threat-level" class="text-gray-500">ANALYZING</span></div>
+                    <div class="text-cyan-600 font-mono text-xs">SCANS COMPILED: <span id="scan-count">0</span></div>
+                </div>
+            </div>
+        </header>
 
-    <!-- Header -->
-    <header>
-        <div class="header-title">
-            OSG203 // TACTICAL SCANNER <div class="live-dot"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="panel-box border border-cyan-900 bg-black/40 p-4 rounded-tl-xl rounded-br-xl flex flex-col gap-6 relative transition-colors">
+                <h2 class="text-cyan-400 font-bold tracking-widest uppercase">SYS_MONITOR</h2>
+                <div class="flex justify-center"><div class="radar"></div></div>
+                <div class="border border-gray-800 bg-black p-3 h-64 font-mono text-xs overflow-y-auto shadow-inner" id="terminal-log">
+                    <div class="text-cyan-600">[SYS] Initializing OSG203 Engine...</div>
+                    <div class="text-cyan-600">[SYS] System ready. Awaiting command...</div>
+                </div>
+                <button id="scan-btn" class="w-full mt-auto py-3 border border-cyan-500 text-cyan-400 font-bold tracking-widest hover:bg-cyan-500 hover:text-black transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                    [ INITIATE FULL SCAN ]
+                </button>
+            </div>
+
+            <div class="panel-box lg:col-span-2 border border-cyan-900 bg-black/40 p-4 rounded-tr-xl rounded-bl-xl transition-colors flex flex-col justify-between">
+                <div>
+                    <h2 class="text-cyan-400 font-bold tracking-widest uppercase mb-4">THREAT INTELLIGENCE</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm font-mono">
+                            <thead class="text-cyan-600 border-b border-cyan-900">
+                                <tr>
+                                    <th class="pb-3 pl-2 w-16">ID</th>
+                                    <th class="pb-3 w-40">TIME_STAMP</th>
+                                    <th class="pb-3">MODULE</th>
+                                    <th class="pb-3 w-32">RISK_LEVEL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-tbody" class="text-gray-300">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="header-stats">
-            <div>THREAT LEVEL: <span class="stat-value glow-red" id="globalThreat">ELEVATED</span></div>
-            <div>SCANS COMPILED: <span class="stat-value" id="scanCount">142</span></div>
-        </div>
-    </header>
-
-    <!-- Main Layout -->
-    <div class="hud-layout">
-        
-        <!-- Left: System Monitor -->
-        <aside class="panel">
-            <h3 class="glow-cyan">SYS_MONITOR</h3>
-            <div class="radar-box">
-                <div class="radar"><div class="radar-sweep"></div></div>
-            </div>
-            <div class="terminal font-mono" id="terminal">
-                <div><span class="term-prefix">[SYS]</span>Kernel loaded successfully.</div>
-                <div><span class="term-prefix">[SYS]</span>Establishing secure DB connection... OK.</div>
-                <div><span class="term-prefix">[SYS]</span>Awaiting manual override...</div>
-            </div>
-        </aside>
-
-        <!-- Right: Threat Intelligence Table -->
-        <main class="panel">
-            <div class="panel-header">
-                <h3 class="glow-cyan">THREAT INTELLIGENCE</h3>
-                <button class="btn-scan" id="btnScan" onclick="triggerScan()">[ INITIATE SCAN ]</button>
-            </div>
-            
-            <div style="overflow-x: auto;">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th width="5%"></th>
-                            <th width="20%">TIME_STAMP</th>
-                            <th width="35%">TARGET_MODULE</th>
-                            <th width="40%">RISK_ASSESSMENT</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- Rendered by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </main>
     </div>
 
     <script>
-        // --- Mock Data ---
-        let totalScans = 142;
-        let tableData = [
-            { 
-                id: 'scan-001', time: "19:42:01", module: "check_suid", risk: "CRITICAL", 
-                message: "SUID bit set on dangerous binary.",
-                file: "/usr/bin/nmap", state: "SUID bit explicitly enabled (root)", 
-                remediation: "sudo chmod u-s /usr/bin/nmap\nsudo systemctl daemon-reload" 
-            },
-            { 
-                id: 'scan-002', time: "19:41:33", module: "check_packages", risk: "CRITICAL", 
-                message: "Vulnerable version of OpenSSL detected (CVE-2026-XXXX).",
-                file: "dpkg -l | grep openssl", state: "openssl 1.1.1f-1ubuntu2 (VULNERABLE)", 
-                remediation: "sudo apt-get update\nsudo apt-get install --only-upgrade openssl\nsudo systemctl restart nginx" 
-            },
-            { 
-                id: 'scan-003', time: "19:38:15", module: "check_ssh", risk: "WARNING", 
-                message: "Root login is permitted via SSH.",
-                file: "/etc/ssh/sshd_config", state: "PermitRootLogin yes", 
-                remediation: "sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config\nsudo systemctl reload sshd" 
-            },
-            { 
-                id: 'scan-004', time: "19:35:44", module: "check_users", risk: "SECURE", 
-                message: "No unauthorized UID 0 accounts found.",
-                file: "/etc/passwd", state: "Root account integrity verified.", 
-                remediation: "# System is secure. No action required." 
-            }
-        ];
+        const terminal = document.getElementById('terminal-log');
+        const tbody = document.getElementById('data-tbody');
+        const scanBtn = document.getElementById('scan-btn');
 
-        // --- UI Helpers ---
-        function getBadgeHtml(risk) {
-            const r = risk.toUpperCase();
-            if (r === 'CRITICAL') return `<span class="badge font-mono critical">&bull; ${r}</span>`;
-            if (r === 'WARNING') return `<span class="badge font-mono warning">&bull; ${r}</span>`;
-            return `<span class="badge font-mono secure">&bull; ${r}</span>`;
-        }
-
-        // --- Render Table & Accordion ---
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-
-            tableData.forEach((item, index) => {
-                // 1. Main Row
-                const trMain = document.createElement('tr');
-                trMain.className = 'tr-main font-mono';
-                trMain.onclick = () => toggleRow(index);
-                trMain.innerHTML = `
-                    <td style="text-align: center;"><span class="row-chevron" id="icon-${index}">&#9656;</span></td>
-                    <td>${item.time}</td>
-                    <td>${item.module}</td>
-                    <td>${getBadgeHtml(item.risk)} <span style="font-size:0.8rem; margin-left:10px; color:rgba(255,255,255,0.5); font-family: 'Rajdhani', sans-serif;">${item.message.substring(0, 30)}...</span></td>
-                `;
-
-                // 2. Detail Row (Hidden Accordion)
-                const trDetail = document.createElement('tr');
-                trDetail.className = 'tr-detail';
-                trDetail.id = `detail-${index}`;
-                
-                const isSecure = item.risk === 'SECURE';
-                const stateClass = isSecure ? 'info-box' : 'info-box danger font-mono';
-                
-                trDetail.innerHTML = `
-                    <td colspan="4">
-                        <div class="detail-container">
-                            <!-- Left: Context -->
-                            <div>
-                                <div class="info-group">
-                                    <div class="info-label">Target File / Resource</div>
-                                    <div class="info-box font-mono" style="color:var(--cyan)">${item.file}</div>
-                                </div>
-                                <div class="info-group">
-                                    <div class="info-label">Current Value Detected</div>
-                                    <div class="${stateClass}">${item.state}</div>
-                                </div>
-                            </div>
-                            <!-- Right: Remediation -->
-                            <div class="remediation-area">
-                                <div class="info-label">Recommended Remediation</div>
-                                <div class="code-box-wrapper">
-                                    <pre>${item.remediation}</pre>
-                                    <button class="btn-copy" onclick="copyCode(this, \`${item.remediation.replace(/`/g, '\\`')}\`)">COPY CODE</button>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                `;
-
-                tbody.appendChild(trMain);
-                tbody.appendChild(trDetail);
-            });
-        }
-
-        // --- Accordion Logic ---
-        function toggleRow(index) {
-            const detailRow = document.getElementById(`detail-${index}`);
-            const icon = document.getElementById(`icon-${index}`);
-            const mainRow = detailRow.previousElementSibling;
-
-            // Optional: Close all others first for exclusive accordion
-            document.querySelectorAll('.tr-detail').forEach(row => {
-                if(row.id !== `detail-${index}`) {
-                    row.classList.remove('open');
-                    row.previousElementSibling.classList.remove('active');
-                }
-            });
-
-            // Toggle target
-            if (detailRow.classList.contains('open')) {
-                detailRow.classList.remove('open');
-                mainRow.classList.remove('active');
-            } else {
-                detailRow.classList.add('open');
-                mainRow.classList.add('active');
-                logTerminal(`[OPR] Investigating ${tableData[index].module} details...`);
-            }
-        }
-
-        // --- Utilities ---
-        function copyCode(btn, text) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-
-            btn.innerText = 'COPIED!';
-            btn.classList.add('success');
-            logTerminal('[SYS] Remediation payload copied to clipboard.');
-
-            setTimeout(() => {
-                btn.innerText = 'COPY CODE';
-                btn.classList.remove('success');
-            }, 2000);
-        }
-
-        function logTerminal(msg) {
-            const term = document.getElementById('terminal');
-            const div = document.createElement('div');
-            div.innerHTML = `<span class="term-prefix">[SYS]</span>${msg}`;
-            term.appendChild(div);
-            term.scrollTop = term.scrollHeight;
-        }
-
-        // --- Simulated Scan Process ---
-        function triggerScan() {
-            const btn = document.getElementById('btnScan');
-            btn.disabled = true;
-            btn.innerText = '[ SCANNING... ]';
+        function toggleTheme() {
+            const body = document.body;
+            const themeBtn = document.getElementById('theme-btn');
+            const themeText = document.getElementById('theme-text');
+            const themeIcon = document.getElementById('theme-icon');
             
-            // Close any open accordions
-            document.querySelectorAll('.tr-detail').forEach(r => r.classList.remove('open'));
-            document.querySelectorAll('.tr-main').forEach(r => r.classList.remove('active'));
-
-            logTerminal('<span class="glow-yellow">Initiating full system diagnostic...</span>');
-            setTimeout(() => logTerminal('Scanning /etc/shadow hashes...'), 600);
-            setTimeout(() => logTerminal('Analyzing firewall rule configurations...'), 1500);
-
-            setTimeout(() => {
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('en-US', {hour12: false});
-                
-                tableData.unshift({
-                    id: `scan-${Date.now()}`, time: timeStr, module: "check_firewall", risk: "CRITICAL", 
-                    message: "UFW is inactive. System exposed to external networks.",
-                    file: "sudo ufw status", state: "Status: inactive", 
-                    remediation: "sudo ufw default deny incoming\nsudo ufw default allow outgoing\nsudo ufw enable"
-                });
-
-                totalScans++;
-                document.getElementById('scanCount').innerText = totalScans;
-                renderTable();
-
-                btn.disabled = false;
-                btn.innerText = '[ INITIATE SCAN ]';
-                logTerminal('<span class="glow-red">Alert: New vulnerabilities detected!</span>');
-                
-                // Automatically expand the new row
-                setTimeout(() => toggleRow(0), 300);
-            }, 3000);
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('light-mode')) {
+                themeText.innerText = 'DARK MODE';
+                themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>`;
+                themeBtn.className = 'flex items-center gap-2 px-3.5 py-2 border border-blue-600 text-blue-700 text-xs font-bold uppercase tracking-wider rounded hover:bg-blue-600 hover:text-white transition-colors shadow-sm';
+            } else {
+                themeText.innerText = 'LIGHT MODE';
+                themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>`;
+                themeBtn.className = 'flex items-center gap-2 px-3.5 py-2 border border-cyan-500 text-cyan-400 text-xs font-bold uppercase tracking-wider rounded hover:bg-cyan-500 hover:text-black transition-colors shadow-sm';
+            }
         }
 
-        // Init
-        window.onload = renderTable;
+        function logToTerminal(msg, type = "SYS") {
+            let color = type === "ERR" ? "text-red-500" : (type === "WARN" ? "text-yellow-400" : "text-green-400");
+            terminal.innerHTML += `<div class="${color}">[${type}] ${msg}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function toggleAccordion(id) {
+            const row = document.getElementById(id);
+            if (row.classList.contains('open')) {
+                row.classList.remove('open');
+            } else {
+                document.querySelectorAll('.accordion-content.open').forEach(el => el.classList.remove('open'));
+                row.classList.add('open');
+            }
+        }
+
+        async function fetchResults() {
+            try {
+                const response = await fetch('/api/results');
+                const json = await response.json();
+                
+                if (json.status === "success") {
+                    let criticalCount = 0;
+                    let warningCount = 0;
+                    document.getElementById('scan-count').innerText = json.data.length;
+
+                    if (json.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-gray-500">No data found in scanner.db. Initiate a scan.</td></tr>';
+                        document.getElementById('threat-level').innerText = 'SECURE';
+                        document.getElementById('threat-level').className = 'text-green-500 font-bold';
+                        return;
+                    }
+
+                    let htmlString = '';
+                    
+                    json.data.forEach(item => {
+                        let riskClass = 'text-green-500 border-green-500';
+                        let rowBg = 'hover:bg-cyan-950/20';
+                        
+                        if (item.risk_level === 'CRITICAL' || item.risk_level === 'HIGH') {
+                            riskClass = 'text-red-500 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]';
+                            rowBg = 'hover:bg-red-950/20';
+                            criticalCount++;
+                        } else if (item.risk_level === 'WARNING') {
+                            riskClass = 'text-yellow-500 border-yellow-500';
+                            rowBg = 'hover:bg-yellow-950/20';
+                            warningCount++;
+                        }
+
+                        let parts = item.message.split('|');
+                        let anomalyMsg = parts[0] || "No description provided.";
+                        let fixMsg = parts[1] || "Manual investigation required.";
+                        const detailId = 'detail-' + item.id;
+
+                        htmlString += `
+                            <tr class="border-b border-cyan-950/60 ${rowBg} cursor-pointer transition-colors" onclick="toggleAccordion('${detailId}')">
+                                <td class="py-4 pl-2">${item.id}</td>
+                                <td class="py-4 text-cyan-600 font-semibold">${item.scan_time.split('.')[0]}</td>
+                                <td class="py-4 font-bold">${item.module_name}</td>
+                                <td class="py-4">
+                                    <span class="px-2 py-1 border ${riskClass} bg-black/20 text-[11px] font-bold tracking-wider rounded">[ ${item.risk_level} ]</span>
+                                </td>
+                            </tr>
+                            <tr id="${detailId}" class="accordion-content bg-[#040408]">
+                                <td colspan="4" class="p-0 border-0">
+                                    <div class="detail-wrapper">
+                                        <div class="p-5 flex flex-col gap-4 bg-black/60 shadow-inner">
+                                            <div class="flex flex-col gap-2 border-l-2 border-red-500 pl-4 py-1">
+                                                <div class="text-[10px] text-red-500 font-bold tracking-widest flex items-center gap-2">
+                                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                                                    DIAGNOSTIC FINDING
+                                                </div>
+                                                <div class="text-[13px] text-gray-300 font-mono break-words leading-relaxed">
+                                                    ${anomalyMsg}
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-col gap-2 border-l-2 border-cyan-500 pl-4 py-1 mt-1">
+                                                <div class="text-[10px] text-cyan-400 font-bold tracking-widest flex items-center gap-2">
+                                                    <span class="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>
+                                                    RECOMMENDED EXECUTION
+                                                </div>
+                                                <div class="bg-black border border-cyan-900/50 rounded p-3 text-[13px] text-green-400 font-mono break-words select-all shadow-inner">
+                                                    <span class="text-gray-600 mr-2">$</span>${fixMsg}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tbody.innerHTML = htmlString;
+
+                    let threatEl = document.getElementById('threat-level');
+                    if (criticalCount > 0) {
+                        threatEl.innerText = 'CRITICAL';
+                        threatEl.className = 'text-red-500 font-bold animate-pulse';
+                    } else if (warningCount > 0) {
+                        threatEl.innerText = 'ELEVATED';
+                        threatEl.className = 'text-yellow-400 font-bold';
+                    } else {
+                        threatEl.innerText = 'SECURE';
+                        threatEl.className = 'text-green-500 font-bold';
+                    }
+                }
+            } catch (e) {
+                logToTerminal("Failed to connect to backend API.", "ERR");
+            }
+        }
+
+        scanBtn.addEventListener('click', async () => {
+            logToTerminal("Initiating system scan via main.sh...", "WARN");
+            scanBtn.innerHTML = "[ SCANNING... PLEASE WAIT ]";
+            scanBtn.classList.add("animate-pulse", "bg-cyan-900");
+            scanBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/scan', { method: 'POST' });
+                const json = await response.json();
+                
+                if (json.status === "success") {
+                    logToTerminal("Scan sequence completed successfully.", "SYS");
+                    logToTerminal("Reloading threat intelligence...", "SYS");
+                    await fetchResults(); 
+                }
+            } catch (e) {
+                logToTerminal("Scan execution failed.", "ERR");
+            } finally {
+                scanBtn.innerHTML = "[ INITIATE FULL SCAN ]";
+                scanBtn.classList.remove("animate-pulse", "bg-cyan-900");
+                scanBtn.disabled = false;
+            }
+        });
+
+        fetchResults();
     </script>
 </body>
 </html>

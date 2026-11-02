@@ -1,0 +1,19 @@
+{
+    "architecture": "DevSecOps Multi-Node",
+    "targets": [
+        {
+            "node_id": "NODE-01",
+            "ip_address": "127.0.0.1",
+            "role": "Local Ubuntu Server",
+            "ssh_key_path": "local",
+            "status": "ACTIVE"
+        },
+        {
+            "node_id": "NODE-02",
+            "ip_address": "192.168.1.150",
+            "role": "Production Web Server",
+            "ssh_key_path": "~/.ssh/id_rsa_node02",
+            "status": "PENDING_INTEGRATION"
+        }
+    ]
+}

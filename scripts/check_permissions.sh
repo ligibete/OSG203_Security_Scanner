@@ -24,10 +24,12 @@ log_header "MODULE 4: KIỂM TRA PHÂN QUYỀN TỆP TIN NHẠY CẢM & SUID"
 log_info "[SEC-FIL-01] Kiểm tra phân quyền tệp tin /etc/shadow..."
 SHADOW_PERM=$(stat -c "%a" /etc/shadow)
 SHADOW_OWNER=$(stat -c "%U:%G" /etc/shadow)
-if [[ "${SHADOW_PERM}" == "600" ]] || [[ "${SHADOW_PERM}" == "640" ]] || [[ "${SHADOW_PERM}" == "000" ]]; then
-    log_pass "Phân quyền /etc/shadow an toàn: ${SHADOW_PERM} (Sở hữu: ${SHADOW_OWNER})."
+if [[ "${SHADOW_PERM}" == "600" ]] || [[ "${SHADOW_PERM}" == "640" ]] || [[ ... ]]; then
+    log_pass "Phân quyền /etc/shadow an toàn: ${SHADOW_PERM} (Sở hữu: ${SHADOW_OWNER})"
+    record_result "check_permissions" "SECURE" "Phân quyền /etc/shadow an toàn (${SHADOW_PERM}).|Không yêu cầu hành động."
 else
-    log_fail "Phân quyền /etc/shadow NGUY HIỂM: ${SHADOW_PERM} (Yêu cầu tối đa: 0640)."
+    log_fail "Phân quyền /etc/shadow NGUY HIỂM: ${SHADOW_PERM} (Yêu cầu tối đa 640)"
+    record_result "check_permissions" "CRITICAL" "Phân quyền /etc/shadow nguy hiểm (${SHADOW_PERM})!|sudo chmod 600 /etc/shadow"
 fi
 
 # 2. Kiểm tra phân quyền /etc/passwd
@@ -35,8 +37,10 @@ log_info "[SEC-FIL-02] Kiểm tra phân quyền tệp tin /etc/passwd..."
 PASSWD_PERM=$(stat -c "%a" /etc/passwd)
 if [[ "${PASSWD_PERM}" == "644" ]]; then
     log_pass "Phân quyền /etc/passwd đạt chuẩn: ${PASSWD_PERM}."
+    record_result "check_permissions" "SECURE" "Phân quyền /etc/passwd an toàn (${PASSWD_PERM}).|Không yêu cầu hành động."
 else
     log_warn "Phân quyền /etc/passwd: ${PASSWD_PERM} (Chuẩn: 0644)."
+    record_result "check_permissions" "WARNING" "Phân quyền /etc/passwd chưa chuẩn (${PASSWD_PERM}).|sudo chmod 644 /etc/passwd"
 fi
 
 # 3. Quét các tệp nhị phân có cờ SUID bất thường
@@ -51,12 +55,14 @@ FOUND_DANGEROUS=0
 for d_bin in "${DANGEROUS_SUID[@]}"; do
     if echo "${SUID_FILES}" | grep -qE "/${d_bin}$"; then
         log_fail "CẢNH BÁO LỖ HỔNG LEO THANG ĐẶC QUYỀN (GTFOBins): ${d_bin} bị gán SUID!"
-        FOUND_DANGEROUS=1
+        record_result "check_permissions" "CRITICAL" "Phát hiện tệp SUID nguy hiểm: ${d_bin}|sudo chmod -s \$(which ${d_bin})"
+	FOUND_DANGEROUS=1
     fi
 done
 
 if [[ "${FOUND_DANGEROUS}" -eq 0 ]]; then
     log_pass "Không phát hiện tệp tin nguy hiểm nào bị lạm dụng cờ SUID."
+    record_result "check_permissions" "SECURE" "Không phát hiện tệp tin SUID nguy hiểm.|Không yêu cầu hành động."
 fi
 
 # 4. Quét tệp tin có quyền ghi tự do (World-Writable)
@@ -64,8 +70,10 @@ log_info "[SEC-FIL-05] Rà soát các tệp tin có quyền ghi tự do (World-w
 WW_FILES=$(find /etc /var/log -xdev -type f -perm -0002 2>/dev/null | head -n 5 || true)
 if [[ -z "${WW_FILES}" ]]; then
     log_pass "Không phát hiện tệp tin nhạy cảm nào bị quyền ghi cho mọi người (world-writable)."
+    record_result "check_permissions" "SECURE" "Không phát hiện tệp tin world-writable.|Không yêu cầu hành động."
 else
-    log_fail "Phát hiện tệp tin world-writable nguy hiểm trong /etc hoặc /var/log: ${WW_FILES}"
+    log_fail "Phát hiện tệp tin world-writable nguy hiểm trong /etc hoặc /var/log: ..."
+    record_result "check_permissions" "CRITICAL" "Phát hiện tệp tin world-writable nguy hiểm!|# Cần kiểm tra thủ công các tệp tin được liệt kê."
 fi
 
 echo -e "\n${BOLD}${BGREEN}Hoàn thành quét Module 4 (File Permissions).${NC}\n"

@@ -33,10 +33,13 @@ PERMIT_ROOT=$(echo $PERMIT_ROOT | awk '{print $1}')
 
 if [[ "${PERMIT_ROOT}" == "no" ]]; then
     log_pass "PermitRootLogin được đặt là 'no' (Cấm hoàn toàn đăng nhập root qua SSH - Chuẩn CIS)."
+    record_result "check_ssh" "SECURE" "PermitRootLogin được đặt là 'no'." "Hệ thống an toàn"
 elif [[ "${PERMIT_ROOT}" == "prohibit-password" ]] || [[ "${PERMIT_ROOT}" == "without-password" ]]; then
     log_warn "PermitRootLogin là '${PERMIT_ROOT}' (Chỉ cho phép đăng nhập qua SSH Key, khuyến nghị: 'no')."
+    record_result "check_ssh" "WARNING" "PermitRootLogin là '${PERMIT_ROOT}'." "Khuyến nghị đổi thành 'no' trong /etc/ssh/sshd_config"
 else
     log_fail "PermitRootLogin được cấu hình là '${PERMIT_ROOT}' (Nguy cơ bị tấn công Brute-force mật khẩu root!)."
+    record_result "check_ssh" "CRITICAL" "PermitRootLogin được cấu hình là '${PERMIT_ROOT}' (Nguy cơ bị tấn công Brute-force!)." "Sửa file /etc/ssh/sshd_config đổi thành PermitRootLogin no, sau đó chạy: sudo systemctl restart ssh"
 fi
 
 # 2. Kiểm tra PermitEmptyPasswords

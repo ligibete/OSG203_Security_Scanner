@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>OSG203 // Tactical Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .radar-sweep {
+            background: conic-gradient(from 0deg, transparent 70%, rgba(6, 182, 212, 0.5) 100%);
+            animation: scan-radar 3s linear infinite;
+            border-radius: 50%;
+        }
+        @keyframes scan-radar {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-[#050b14] text-gray-300 font-mono min-h-screen p-6">
+    <div class="max-w-[1400px] mx-auto flex flex-col lg:flex-row gap-8">
+        
+        <!-- CỘT TRÁI: RADAR & LOGS -->
+        <div class="w-full lg:w-1/3 flex flex-col gap-6">
+            
+            <!-- Radar Box -->
+            <div class="border border-slate-800 bg-[#0a101a] h-72 flex justify-center items-center relative overflow-hidden">
+                <div class="w-48 h-48 rounded-full border border-cyan-800/50 relative">
+                    <!-- Trục chéo -->
+                    <div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-[1px] bg-cyan-900/50"></div></div>
+                    <div class="absolute inset-0 flex items-center justify-center"><div class="h-full w-[1px] bg-cyan-900/50"></div></div>
+                    <!-- Vòng tròn nhỏ -->
+                    <div class="absolute inset-0 rounded-full border border-cyan-800/30 scale-50"></div>
+                    <!-- Tia quét -->
+                    <div class="absolute inset-0 radar-sweep"></div>
+                </div>
+            </div>
+
+            <!-- Log Box -->
+            <div class="border border-slate-800 bg-[#0a101a] p-5 text-[11px] h-56 overflow-y-auto space-y-2">
+                <div class="text-cyan-500">[SYS] Initializing OSG203 Engine...</div>
+                <div class="text-cyan-500">[SYS] Awaiting manual override...</div>
+                <div id="terminal-log"></div>
+            </div>
+
+            <!-- Nút Scan -->
+            <button onclick="triggerScan()" class="w-full border border-cyan-600 bg-cyan-900/20 hover:bg-cyan-800/40 text-cyan-400 py-3 font-bold transition shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                [ INITIATE FULL SCAN ]
+            </button>
+        </div>
+
+        <!-- CỘT PHẢI: KẾT QUẢ QUÉT (RESULTS) -->
+        <div class="w-full lg:w-2/3 flex flex-col gap-6" id="results-container">
+            <!-- Dữ liệu sẽ được nạp bằng JavaScript -->
+            <div class="text-slate-500 mt-10 text-center">[ Đang chờ dữ liệu quét... ]</div>
+        </div>
+
+    </div>
+
+    <script>
+        function fetchResults() {
+            fetch('/api/results')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        let container = document.getElementById('results-container');
+                        container.innerHTML = '';
+                        
+                        if (data.data.length === 0) {
+                            container.innerHTML = `<div class="text-slate-500 text-center py-10">[ Không có dữ liệu quét trong hệ thống ]</div>`;
+                            return;
+                        }
+                        
+                        data.data.forEach(item => {
+                            let isSecure = item.risk_level === 'SECURE';
+                            
+                            // --- Cột Nút Hành Động ---
+                            let actionHtml = '';
+                            if (!isSecure) {
+                                actionHtml = `
+                                    <div class="flex gap-2">
+                                        <button onclick="handleRemediate('${item.module_name}', 'approve')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-3 py-1.5 text-[11px] font-bold hover:bg-emerald-500 hover:text-black transition">
+                                            [ ✓ FIX ]
+                                        </button>
+                                        <button onclick="handleIgnore('${item.module_name}')" class="bg-red-500/20 text-red-400 border border-red-500/50 px-3 py-1.5 text-[11px] font-bold hover:bg-red-500 hover:text-white transition">

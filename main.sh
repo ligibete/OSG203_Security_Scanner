@@ -15,6 +15,42 @@ source "${BASE_DIR}/core/logger.sh"
 # shellcheck source=core/utils.sh
 source "${BASE_DIR}/core/utils.sh"
 
+
+
+
+
+# === Xóa kết quả cũ trước khi quét mới ===
+DB="${BASE_DIR}/scanner.db"
+if [ -f "$DB" ]; then
+    sqlite3 "$DB" "DELETE FROM scan_results;"
+fi
+
+
+
+
+record_result() {
+    local MODULE=$1
+    local RISK=$2
+    local MSG=$3
+    
+    # BƯỚC SỬA LỖI SQL: Xóa sạch hoặc thay thế dấu nháy đơn (') thành nháy kép (")
+    local CLEAN_MSG="${MSG//\'/\"}"
+    
+    local DB_PATH="/home/project/OSG203_Security_Scanner/scanner.db"
+    local TIME=$(date +"%Y-%m-%d %H:%M:%S")
+    
+    # Dùng CLEAN_MSG thay vì MSG để an toàn cho SQLite
+    sqlite3 "$DB_PATH" "INSERT INTO scan_results (scan_time, module_name, risk_level, message) VALUES ('$TIME', '$MODULE', '$RISK', '$CLEAN_MSG');"
+}
+
+# BƯỚC SỬA LỖI COMMAND NOT FOUND: Export hàm này ra môi trường toàn cục
+export -f record_result
+
+
+
+
+
+
 # ... (các dòng source ở trên) ...
 
 require_root "$@"
@@ -100,3 +136,33 @@ echo -e "\n${BOLD}${BBLUE}======================================================
 echo -e "${BOLD}${BGREEN}HOÀN THÀNH DÒ QUÉT TOÀN BỘ HỆ THỐNG TRONG ${ELAPSED} GIÂY!${NC}"
 echo -e "Nhật ký quét chi tiết đã được lưu tại: ${BOLD}${SCAN_LOG_FILE}${NC}"
 echo -e "${BOLD}${BBLUE}================================================================================${NC}\n"
+
+
+
+# ==========================================
+# KIỂM TRA UFW (FIREWALL)
+# ==========================================
+if sudo ufw status | grep -q -i "status: inactive"; then
+    echo -e "${RED}[FAIL] Tường lửa UFW đang bị tắt (Inactive)!${NC}"
+    record_result "check_firewall" "CRITICAL" "Tường lửa UFW đang bị tắt (Inactive)!|sudo ufw enable"
+else
+    echo -e "${GREEN}[PASS] Tường lửa UFW đang hoạt động (Active).${NC}"
+    record_result "check_firewall" "SECURE" "Tường lửa UFW đang hoạt động bình thường.|Không yêu cầu hành động."
+fi
+
+
+
+# ==========================================
+# KIỂM TRA SSH ROOT LOGIN
+# ==========================================
+if sudo grep -qE "^\s*PermitRootLogin\s+yes" /etc/ssh/sshd_config; then
+    echo -e "${RED}[FAIL] PermitRootLogin được cấu hình là 'yes' (Nguy cơ bị tấn công Brute-force mật khẩu root!).${NC}"
+    record_result "check_ssh" "WARNING" "PermitRootLogin được cấu hình là 'yes' (Nguy cơ bị tấn công Brute-force!).|sudo sed -i 's/^PermitRootLogin.*yes/PermitRootLogin no/' /etc/ssh/sshd_config && sudo systemctl restart ssh"
+else
+    echo -e "${GREEN}[PASS] Cấu hình SSH an toàn (PermitRootLogin chặn root).${NC}"
+    record_result "check_ssh" "SECURE" "Cấu hình SSH an toàn (PermitRootLogin chặn root).|Không yêu cầu hành động."
+fi
+
+
+
+
