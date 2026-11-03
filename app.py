@@ -58,7 +58,7 @@ def trigger_scan():
     try:
         # Gọi Bash script quét hệ thống thực tế
         if os.path.exists("main.sh"):
-            subprocess.run(["sudo", "bash", "main.sh"], check=False)
+            subprocess.run([ "bash", "main.sh"], check=False)
         else:
             # Fallback chèn dữ liệu mẫu nếu chưa có main.sh để test giao diện
             conn = sqlite3.connect(DB_NAME)

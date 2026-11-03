@@ -2,7 +2,7 @@
 # ==============================================================================
 # main.sh - Chương trình Chính Điều phối Bộ Dò quét Bảo mật OSG203
 # ==============================================================================
-set -euo pipefail
+#set -uo pipefail
 IFS=$'\n\t'
 
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,11 +19,17 @@ source "${BASE_DIR}/core/utils.sh"
 
 
 
-# === Xóa kết quả cũ trước khi quét mới ===
+# === KHỞI TẠO VÀ LÀM SẠCH DATABASE ===
 DB="${BASE_DIR}/scanner.db"
-if [ -f "$DB" ]; then
-    sqlite3 "$DB" "DELETE FROM scan_results;"
-fi
+
+# 1. Xóa thẳng tay file DB cũ bị hỏng để tránh hậu họa
+rm -f "$DB"
+
+# 2. Tạo mới file và đổ ngay cấu trúc bảng chuẩn vào
+sqlite3 "$DB" "CREATE TABLE scan_results (id INTEGER PRIMARY KEY AUTOINCREMENT, scan_time TEXT, module_name TEXT, risk_level TEXT, message TEXT);"
+
+# 3. Mở full quyền đọc/ghi để Docker và Script con không bị chặn
+chmod 777 "$DB"
 
 
 
@@ -45,7 +51,6 @@ record_result() {
 
 # BƯỚC SỬA LỖI COMMAND NOT FOUND: Export hàm này ra môi trường toàn cục
 export -f record_result
-
 
 
 
@@ -117,14 +122,16 @@ MODULES=(
 )
 
 for mod in "${MODULES[@]}"; do
-    MOD_PATH="${BASE_DIR}/scripts/${mod}"
-    if [[ -x "${MOD_PATH}" ]]; then
-        # Thêm dấu & ở cuối để chạy ngầm (Background Job / Parallel)
-        bash "${MOD_PATH}" &
+    # Thay thế dòng MOD_PATH cũ bằng dòng khóa cứng này:
+    MOD_PATH="/home/project/OSG203_Security_Scanner/scripts/${mod}"
+    
+    if [[ -f "${MOD_PATH}" ]]; then
+        source "${MOD_PATH}"
     else
-        log_warn "Không tìm thấy hoặc chưa cấp quyền thực thi cho module: ${mod}"
+        log_warn "Không tìm thấy module: ${mod}"
     fi
 done
+
 
 # BẮT BUỘC: Đợi tất cả các tiến trình chạy ngầm kết thúc rồi mới tổng kết
 wait
@@ -137,31 +144,6 @@ echo -e "${BOLD}${BGREEN}HOÀN THÀNH DÒ QUÉT TOÀN BỘ HỆ THỐNG TRONG ${
 echo -e "Nhật ký quét chi tiết đã được lưu tại: ${BOLD}${SCAN_LOG_FILE}${NC}"
 echo -e "${BOLD}${BBLUE}================================================================================${NC}\n"
 
-
-
-# ==========================================
-# KIỂM TRA UFW (FIREWALL)
-# ==========================================
-if sudo ufw status | grep -q -i "status: inactive"; then
-    echo -e "${RED}[FAIL] Tường lửa UFW đang bị tắt (Inactive)!${NC}"
-    record_result "check_firewall" "CRITICAL" "Tường lửa UFW đang bị tắt (Inactive)!|sudo ufw enable"
-else
-    echo -e "${GREEN}[PASS] Tường lửa UFW đang hoạt động (Active).${NC}"
-    record_result "check_firewall" "SECURE" "Tường lửa UFW đang hoạt động bình thường.|Không yêu cầu hành động."
-fi
-
-
-
-# ==========================================
-# KIỂM TRA SSH ROOT LOGIN
-# ==========================================
-if sudo grep -qE "^\s*PermitRootLogin\s+yes" /etc/ssh/sshd_config; then
-    echo -e "${RED}[FAIL] PermitRootLogin được cấu hình là 'yes' (Nguy cơ bị tấn công Brute-force mật khẩu root!).${NC}"
-    record_result "check_ssh" "WARNING" "PermitRootLogin được cấu hình là 'yes' (Nguy cơ bị tấn công Brute-force!).|sudo sed -i 's/^PermitRootLogin.*yes/PermitRootLogin no/' /etc/ssh/sshd_config && sudo systemctl restart ssh"
-else
-    echo -e "${GREEN}[PASS] Cấu hình SSH an toàn (PermitRootLogin chặn root).${NC}"
-    record_result "check_ssh" "SECURE" "Cấu hình SSH an toàn (PermitRootLogin chặn root).|Không yêu cầu hành động."
-fi
 
 
 
