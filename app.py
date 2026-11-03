@@ -23,6 +23,19 @@ def init_db():
 
 @app.route('/')
 def index():
+    # --- ĐOẠN CODE THÊM MỚI ĐỂ XÓA DỮ LIỆU KHI F5 ---
+    try:
+        import sqlite3
+        conn = sqlite3.connect('scanner.db')
+        cursor = conn.cursor()
+        # LƯU Ý: Thay 'ten_bang_cua_em' bằng tên bảng thực tế (VD: results, scans, logs...)
+        cursor.execute("DELETE FROM ten_bang_cua_em") 
+        conn.commit()
+        conn.close()
+    except:
+        pass
+    # ------------------------------------------------
+        
     return render_template('dashboard.html')
 
 @app.route('/api/results', methods=['GET'])

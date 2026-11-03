@@ -1,273 +1,216 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OSG203 // Tactical Scanner</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Rajdhani', sans-serif; background-color: #05050A; color: #fff; transition: background 0.3s, color 0.3s; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        .radar {
-            width: 150px; height: 150px; border-radius: 50%;
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            background: 
-                linear-gradient(90deg, transparent 49.5%, rgba(6, 182, 212, 0.5) 50%, transparent 50.5%),
-                linear-gradient(0deg, transparent 49.5%, rgba(6, 182, 212, 0.5) 50%, transparent 50.5%);
-            position: relative; overflow: hidden;
+        .radar-sweep {
+            background: conic-gradient(from 0deg, transparent 70%, rgba(6, 182, 212, 0.5) 100%);
+            animation: scan-radar 3s linear infinite;
+            border-radius: 50%;
         }
-        .radar::before {
-            content: ''; position: absolute; top: 0; left: 50%;
-            width: 50%; height: 50%;
-            background: linear-gradient(45deg, rgba(6, 182, 212, 0.8) 0%, transparent 50%);
-            transform-origin: bottom left;
-            animation: scan 2s linear infinite;
+        @keyframes scan-radar {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        @keyframes scan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .detail-wrapper {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
         }
-        .accordion-content.open .detail-wrapper {
-            max-height: 600px;
-        }
-
-        /* Light Theme Styles */
-        body.light-mode { background-color: #E2E8F0; color: #0F172A; }
-        body.light-mode header { border-color: #94A3B8; }
-        body.light-mode .panel-box { background-color: #FFFFFF !important; border-color: #CBD5E1 !important; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        body.light-mode h1, body.light-mode h2, body.light-mode .text-cyan-400 { color: #0284C7 !important; }
-        body.light-mode #terminal-log { background-color: #0F172A; color: #34D399; border-color: #CBD5E1; }
-        body.light-mode table thead { border-color: #CBD5E1; color: #0284C7; }
-        body.light-mode tr.border-b { border-color: #E2E8F0 !important; }
-        body.light-mode tbody tr { color: #1E293B !important; font-weight: 600; }
-        body.light-mode .accordion-content { background-color: #F8FAFC !important; }
-        body.light-mode .detail-wrapper div.bg-black\/60 { background-color: #F1F5F9 !important; border-color: #CBD5E1 !important; }
-        body.light-mode .detail-wrapper .bg-black { background-color: #0F172A !important; color: #34D399 !important; border-color: #CBD5E1 !important; }
-        body.light-mode #scan-btn { border-color: #0284C7; color: #0284C7; }
-        body.light-mode #scan-btn:hover { background-color: #0284C7; color: #FFFFFF; }
     </style>
 </head>
-<body class="min-h-screen p-6 flex flex-col justify-center bg-[linear-gradient(rgba(0,15,20,0.8),rgba(0,15,20,0.8)),url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')]">
-    
-    <div class="max-w-7xl mx-auto w-full flex flex-col gap-6">
-        <header class="flex justify-between items-end border-b border-cyan-800 pb-4">
-            <div>
-                <h1 class="text-3xl font-bold text-cyan-400 tracking-widest drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
-                    OSG203 // TACTICAL SCANNER <span class="inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse ml-2"></span>
-                </h1>
-            </div>
-            <div class="flex items-center gap-6">
-                <button onclick="toggleTheme()" id="theme-btn" class="flex items-center gap-2 px-3.5 py-2 border border-cyan-500 text-cyan-400 text-xs font-bold uppercase tracking-wider rounded hover:bg-cyan-500 hover:text-black transition-colors shadow-sm">
-                    <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <span id="theme-text">LIGHT MODE</span>
-                </button>
-                <div class="text-right">
-                    <div class="font-bold text-sm tracking-widest">THREAT LEVEL: <span id="threat-level" class="text-gray-500">ANALYZING</span></div>
-                    <div class="text-cyan-600 font-mono text-xs">SCANS COMPILED: <span id="scan-count">0</span></div>
+<body class="bg-[#050b14] text-gray-300 font-mono min-h-screen p-6">
+    <div class="max-w-[1400px] mx-auto flex flex-col lg:flex-row gap-8">
+        
+        <!-- CỘT TRÁI: RADAR & LOGS -->
+        <div class="w-full lg:w-1/3 flex flex-col gap-6">
+            <h1 class="text-2xl font-bold text-cyan-400 tracking-wider mb-2">OSG203 // TACTICAL SCANNER <span class="inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse ml-2"></span></h1>
+            
+            <div class="border border-slate-800 bg-[#0a101a] p-4 font-bold text-cyan-500 text-sm tracking-widest rounded-t-md">SYS_MONITOR</div>
+            <!-- Radar Box -->
+            <div class="border-x border-b border-slate-800 bg-[#0a101a] h-64 flex justify-center items-center relative overflow-hidden -mt-6">
+                <div class="w-44 h-44 rounded-full border border-cyan-800/50 relative">
+                    <div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-[1px] bg-cyan-900/50"></div></div>
+                    <div class="absolute inset-0 flex items-center justify-center"><div class="h-full w-[1px] bg-cyan-900/50"></div></div>
+                    <div class="absolute inset-0 rounded-full border border-cyan-800/30 scale-50"></div>
+                    <div class="absolute inset-0 radar-sweep"></div>
                 </div>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="panel-box border border-cyan-900 bg-black/40 p-4 rounded-tl-xl rounded-br-xl flex flex-col gap-6 relative transition-colors">
-                <h2 class="text-cyan-400 font-bold tracking-widest uppercase">SYS_MONITOR</h2>
-                <div class="flex justify-center"><div class="radar"></div></div>
-                <div class="border border-gray-800 bg-black p-3 h-64 font-mono text-xs overflow-y-auto shadow-inner" id="terminal-log">
-                    <div class="text-cyan-600">[SYS] Initializing OSG203 Engine...</div>
-                    <div class="text-cyan-600">[SYS] System ready. Awaiting command...</div>
-                </div>
-                <button id="scan-btn" class="w-full mt-auto py-3 border border-cyan-500 text-cyan-400 font-bold tracking-widest hover:bg-cyan-500 hover:text-black transition-colors shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                    [ INITIATE FULL SCAN ]
-                </button>
             </div>
 
-            <div class="panel-box lg:col-span-2 border border-cyan-900 bg-black/40 p-4 rounded-tr-xl rounded-bl-xl transition-colors flex flex-col justify-between">
-                <div>
-                    <h2 class="text-cyan-400 font-bold tracking-widest uppercase mb-4">THREAT INTELLIGENCE</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm font-mono">
-                            <thead class="text-cyan-600 border-b border-cyan-900">
-                                <tr>
-                                    <th class="pb-3 pl-2 w-16">ID</th>
-                                    <th class="pb-3 w-40">TIME_STAMP</th>
-                                    <th class="pb-3">MODULE</th>
-                                    <th class="pb-3 w-32">RISK_LEVEL</th>
-                                </tr>
-                            </thead>
-                            <tbody id="data-tbody" class="text-gray-300">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <!-- Log Box -->
+            <div class="border border-slate-800 bg-[#0a101a] p-4 text-[11px] h-48 overflow-y-auto space-y-2 rounded-b-md">
+                <div class="text-cyan-500">[SYS] Initializing OSG203 Engine...</div>
+                <div class="text-cyan-500">[SYS] System ready. Awaiting command...</div>
+                <div id="terminal-log"></div>
+            </div>
+
+            <!-- Nút Scan -->
+            <button onclick="triggerScan()" class="w-full border border-cyan-600 bg-cyan-900/20 hover:bg-cyan-800/40 text-cyan-400 py-3 font-bold transition shadow-[0_0_15px_rgba(6,182,212,0.15)] rounded">
+                [ INITIATE FULL SCAN ]
+            </button>
+        </div>
+
+        <!-- CỘT PHẢI: KẾT QUẢ QUÉT (RESULTS) -->
+        <div class="w-full lg:w-2/3 flex flex-col gap-6">
+            <div class="flex justify-between items-end mb-2">
+                <div class="text-cyan-500 font-bold text-sm tracking-widest mt-10 lg:mt-0">THREAT INTELLIGENCE</div>
+            </div>
+
+            <div class="border border-slate-800 bg-[#0a101a] rounded-md p-6 overflow-x-auto min-h-[500px]">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-cyan-900/50 text-cyan-600 text-xs">
+                            <th class="py-3 px-2 font-bold w-12">ID</th>
+                            <th class="py-3 px-2 font-bold">TIME_STAMP</th>
+                            <th class="py-3 px-2 font-bold">MODULE</th>
+                            <th class="py-3 px-2 font-bold text-center">RISK_LEVEL</th>
+                            <th class="py-3 px-2 font-bold text-right">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table">
+                        <tr><td colspan="5" class="text-slate-500 text-center py-10">[ Đang chờ dữ liệu quét... ]</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+
     </div>
 
     <script>
-        const terminal = document.getElementById('terminal-log');
-        const tbody = document.getElementById('data-tbody');
-        const scanBtn = document.getElementById('scan-btn');
-
-        function toggleTheme() {
-            const body = document.body;
-            const themeBtn = document.getElementById('theme-btn');
-            const themeText = document.getElementById('theme-text');
-            const themeIcon = document.getElementById('theme-icon');
-            
-            body.classList.toggle('light-mode');
-            
-            if (body.classList.contains('light-mode')) {
-                themeText.innerText = 'DARK MODE';
-                themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>`;
-                themeBtn.className = 'flex items-center gap-2 px-3.5 py-2 border border-blue-600 text-blue-700 text-xs font-bold uppercase tracking-wider rounded hover:bg-blue-600 hover:text-white transition-colors shadow-sm';
-            } else {
-                themeText.innerText = 'LIGHT MODE';
-                themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>`;
-                themeBtn.className = 'flex items-center gap-2 px-3.5 py-2 border border-cyan-500 text-cyan-400 text-xs font-bold uppercase tracking-wider rounded hover:bg-cyan-500 hover:text-black transition-colors shadow-sm';
-            }
-        }
-
-        function logToTerminal(msg, type = "SYS") {
-            let color = type === "ERR" ? "text-red-500" : (type === "WARN" ? "text-yellow-400" : "text-green-400");
-            terminal.innerHTML += `<div class="${color}">[${type}] ${msg}</div>`;
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        function toggleAccordion(id) {
-            const row = document.getElementById(id);
-            if (row.classList.contains('open')) {
-                row.classList.remove('open');
-            } else {
-                document.querySelectorAll('.accordion-content.open').forEach(el => el.classList.remove('open'));
-                row.classList.add('open');
-            }
-        }
-
-        async function fetchResults() {
-            try {
-                const response = await fetch('/api/results');
-                const json = await response.json();
-                
-                if (json.status === "success") {
-                    let criticalCount = 0;
-                    let warningCount = 0;
-                    document.getElementById('scan-count').innerText = json.data.length;
-
-                    if (json.data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-gray-500">No data found in scanner.db. Initiate a scan.</td></tr>';
-                        document.getElementById('threat-level').innerText = 'SECURE';
-                        document.getElementById('threat-level').className = 'text-green-500 font-bold';
-                        return;
-                    }
-
-                    let htmlString = '';
-                    
-                    json.data.forEach(item => {
-                        let riskClass = 'text-green-500 border-green-500';
-                        let rowBg = 'hover:bg-cyan-950/20';
+        function fetchResults() {
+            fetch('/api/results')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        let tbody = document.getElementById('results-table');
+                        tbody.innerHTML = '';
                         
-                        if (item.risk_level === 'CRITICAL' || item.risk_level === 'HIGH') {
-                            riskClass = 'text-red-500 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]';
-                            rowBg = 'hover:bg-red-950/20';
-                            criticalCount++;
-                        } else if (item.risk_level === 'WARNING') {
-                            riskClass = 'text-yellow-500 border-yellow-500';
-                            rowBg = 'hover:bg-yellow-950/20';
-                            warningCount++;
+                        if (data.data.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="5" class="text-slate-500 text-center py-10">[ Không có dữ liệu quét trong hệ thống ]</td></tr>`;
+                            return;
                         }
-
-                        let parts = item.message.split('|');
-                        let anomalyMsg = parts[0] || "No description provided.";
-                        let fixMsg = parts[1] || "Manual investigation required.";
-                        const detailId = 'detail-' + item.id;
-
-                        htmlString += `
-                            <tr class="border-b border-cyan-950/60 ${rowBg} cursor-pointer transition-colors" onclick="toggleAccordion('${detailId}')">
-                                <td class="py-4 pl-2">${item.id}</td>
-                                <td class="py-4 text-cyan-600 font-semibold">${item.scan_time.split('.')[0]}</td>
-                                <td class="py-4 font-bold">${item.module_name}</td>
-                                <td class="py-4">
-                                    <span class="px-2 py-1 border ${riskClass} bg-black/20 text-[11px] font-bold tracking-wider rounded">[ ${item.risk_level} ]</span>
-                                </td>
-                            </tr>
-                            <tr id="${detailId}" class="accordion-content bg-[#040408]">
-                                <td colspan="4" class="p-0 border-0">
-                                    <div class="detail-wrapper">
-                                        <div class="p-5 flex flex-col gap-4 bg-black/60 shadow-inner">
-                                            <div class="flex flex-col gap-2 border-l-2 border-red-500 pl-4 py-1">
-                                                <div class="text-[10px] text-red-500 font-bold tracking-widest flex items-center gap-2">
-                                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-                                                    DIAGNOSTIC FINDING
-                                                </div>
-                                                <div class="text-[13px] text-gray-300 font-mono break-words leading-relaxed">
-                                                    ${anomalyMsg}
-                                                </div>
-                                            </div>
-                                            <div class="flex flex-col gap-2 border-l-2 border-cyan-500 pl-4 py-1 mt-1">
-                                                <div class="text-[10px] text-cyan-400 font-bold tracking-widest flex items-center gap-2">
-                                                    <span class="w-1.5 h-1.5 bg-cyan-500 rounded-full"></span>
-                                                    RECOMMENDED EXECUTION
-                                                </div>
-                                                <div class="bg-black border border-cyan-900/50 rounded p-3 text-[13px] text-green-400 font-mono break-words select-all shadow-inner">
-                                                    <span class="text-gray-600 mr-2">$</span>${fixMsg}
-                                                </div>
-                                            </div>
-                                        </div>
+                        
+                        data.data.forEach(item => {
+                            let isSecure = item.risk_level === 'SECURE';
+                            
+                            let riskBadge = isSecure 
+                                ? `<span class="text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] rounded font-bold">[ SECURE ]</span>`
+                                : `<span class="text-yellow-400 border border-yellow-500/30 bg-yellow-500/10 px-2 py-1 text-[10px] rounded font-bold">[ WARNING ]</span>`;
+                            
+                            let actionHtml = '';
+                            if (!isSecure) {
+                                actionHtml = `
+                                    <div class="flex justify-end gap-2" id="action-group-${item.module_name}">
+                                        <button onclick="handleRemediate('${item.module_name}', 'approve')" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-3 py-1.5 text-[11px] font-bold hover:bg-emerald-500 hover:text-black transition rounded-sm shadow-[0_0_10px_rgba(16,185,129,0.15)]">
+                                            [ ✓ FIX ]
+                                        </button>
+                                        <button onclick="handleIgnore('${item.module_name}')" class="bg-red-500/20 text-red-400 border border-red-500/50 px-3 py-1.5 text-[11px] font-bold hover:bg-red-500 hover:text-white transition rounded-sm shadow-[0_0_10px_rgba(239,68,68,0.15)]">
+                                            [ ✗ IGNORE ]
+                                        </button>
                                     </div>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    
-                    tbody.innerHTML = htmlString;
+                                `;
+                            }
 
-                    let threatEl = document.getElementById('threat-level');
-                    if (criticalCount > 0) {
-                        threatEl.innerText = 'CRITICAL';
-                        threatEl.className = 'text-red-500 font-bold animate-pulse';
-                    } else if (warningCount > 0) {
-                        threatEl.innerText = 'ELEVATED';
-                        threatEl.className = 'text-yellow-400 font-bold';
-                    } else {
-                        threatEl.innerText = 'SECURE';
-                        threatEl.className = 'text-green-500 font-bold';
+                            let mainRow = `
+                                <tr class="border-t border-slate-800/50 group" id="row-main-${item.module_name}">
+                                    <td class="py-4 px-2 text-slate-500 text-xs">${item.id || '-'}</td>
+                                    <td class="py-4 px-2 text-cyan-500 text-xs">${item.scan_time}</td>
+                                    <td class="py-4 px-2 text-white font-bold text-sm">${item.module_name}</td>
+                                    <td class="py-4 px-2 text-center">${riskBadge}</td>
+                                    <td class="py-4 px-2 text-right">${actionHtml}</td>
+                                </tr>
+                            `;
+
+                            let diagRow = '';
+                            if (!isSecure) {
+                                // Đã cập nhật logic hiển thị mockCmd chuẩn
+                                let mockCmd = '$ Manual investigation required.';
+                                
+                                if (item.module_name === 'check_ssh') {
+                                    mockCmd = '$ sudo sed -i "s/^PermitRootLogin.*yes/PermitRootLogin no/" /etc/ssh/sshd_config && sudo systemctl restart ssh';
+                                } else if (item.module_name === 'check_password_policy') {
+                                    mockCmd = '$ sudo sed -i "s/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   90/g" /etc/login.defs';
+                                } else if (item.module_name === 'check_firewall') {
+                                    mockCmd = '$ sudo ufw enable && sudo ufw default deny incoming';
+                                }
+
+                                diagRow = `
+                                    <tr id="row-diag-${item.module_name}">
+                                        <td colspan="5" class="pb-6 px-2">
+                                            <div class="border-l-2 border-red-500 bg-[#0a101a] p-4 ml-2 shadow-lg border border-slate-800/50 relative overflow-hidden">
+                                                <div class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-red-500/10 to-transparent pointer-events-none"></div>
+                                                <div class="text-red-500 text-[10px] font-bold mb-2 tracking-wider">● DIAGNOSTIC FINDING</div>
+                                                <div class="text-slate-300 text-xs mb-4 pl-4">${item.message}</div>
+                                                
+                                                <div class="text-cyan-500 text-[10px] font-bold mb-2 tracking-wider">● RECOMMENDED EXECUTION</div>
+                                                <div class="bg-black/80 border border-slate-800 text-emerald-400 font-mono text-[11px] p-3 rounded-sm pl-4">
+                                                    ${mockCmd}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                            
+                            tbody.innerHTML += mainRow + diagRow;
+                        });
                     }
-                }
-            } catch (e) {
-                logToTerminal("Failed to connect to backend API.", "ERR");
-            }
+                });
         }
 
-        scanBtn.addEventListener('click', async () => {
-            logToTerminal("Initiating system scan via main.sh...", "WARN");
-            scanBtn.innerHTML = "[ SCANNING... PLEASE WAIT ]";
-            scanBtn.classList.add("animate-pulse", "bg-cyan-900");
-            scanBtn.disabled = true;
+        function triggerScan() {
+            let logBox = document.getElementById('terminal-log');
+            logBox.innerHTML += `<div class="text-yellow-400 mt-1">[WARN] Initiating system scan via main.sh...</div>`;
+            logBox.scrollTop = logBox.scrollHeight;
+            
+            fetch('/api/scan', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        logBox.innerHTML += `<div class="text-emerald-400 mt-1">[SYS] Scan sequence completed successfully.</div>`;
+                        fetchResults();
+                    } else {
+                        logBox.innerHTML += `<div class="text-red-500 mt-1">[ERROR] Scan failed: ${data.message}</div>`;
+                    }
+                    logBox.scrollTop = logBox.scrollHeight;
+                });
+        }
 
-            try {
-                const response = await fetch('/api/scan', { method: 'POST' });
-                const json = await response.json();
-                
-                if (json.status === "success") {
-                    logToTerminal("Scan sequence completed successfully.", "SYS");
-                    logToTerminal("Reloading threat intelligence...", "SYS");
-                    await fetchResults(); 
+        function handleRemediate(moduleName, action) {
+            let btnGroup = document.getElementById(`action-group-${moduleName}`);
+            btnGroup.innerHTML = `<span class="text-yellow-400 text-[11px] animate-pulse font-bold border border-yellow-500/50 px-3 py-1 bg-yellow-500/10 rounded">[ FIXING... ]</span>`;
+
+            let formData = new FormData();
+            formData.append('action', action);
+
+            fetch(`/remediate/${moduleName}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    btnGroup.innerHTML = `<span class="text-emerald-400 text-[11px] font-bold border border-emerald-500/50 px-3 py-1 bg-emerald-500/10 rounded">[ SECURE ]</span>`;
+                    setTimeout(() => { fetchResults(); }, 1200);
                 }
-            } catch (e) {
-                logToTerminal("Scan execution failed.", "ERR");
-            } finally {
-                scanBtn.innerHTML = "[ INITIATE FULL SCAN ]";
-                scanBtn.classList.remove("animate-pulse", "bg-cyan-900");
-                scanBtn.disabled = false;
-            }
-        });
+            });
+        }
 
-        fetchResults();
+        function handleIgnore(moduleName) {
+            let mainRow = document.getElementById(`row-main-${moduleName}`);
+            let diagRow = document.getElementById(`row-diag-${moduleName}`);
+            
+            if (mainRow) mainRow.classList.add('fade-out');
+            if (diagRow) diagRow.classList.add('fade-out');
+            
+            setTimeout(() => { 
+                if (mainRow) mainRow.remove(); 
+                if (diagRow) diagRow.remove(); 
+            }, 500);
+        }
+
+        window.onload = fetchResults;
     </script>
 </body>
 </html>
