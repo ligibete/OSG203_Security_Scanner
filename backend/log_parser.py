@@ -204,14 +204,13 @@ def parse_scan_log(log_file_path):
                 )
 
                 # Định vị chính xác số dòng lỗi trong file thật trên Ubuntu
-                line_num, curr_val = locate_exact_line(file_path, meta["search_regex"])
-
+		line_num, curr_val = locate_exact_line(file_path.replace("/etc/", "/host_etc/"), meta["search_regex"])
                 # Sinh câu lệnh khắc phục (sed cho file cấu hình, hoặc lệnh chmod/find)
                 if any(cmd in rec_val for cmd in ("chmod ", "chown ", "find ", "Rà soát", "Chỉ duy nhất")):
                     fix_cmd = rec_val
                 else:
                     safe_rec = rec_val.replace("/", "\\/")
-                    fix_cmd = f"sed -i '{line_num}s/.*/{safe_rec}/' {file_path}"
+                    fix_cmd = f"sed -i '{line_num}s/.*/{safe_rec}/' {file_path.replace('/etc/', '/host_etc/')}"
 
                 findings.append({
                     "rule_id": current_rule_id,

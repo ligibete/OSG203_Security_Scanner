@@ -128,11 +128,11 @@
                                 let mockCmd = '$ Manual investigation required.';
                                 
                                 if (item.module_name === 'check_ssh') {
-                                    mockCmd = '$ sudo sed -i "s/^PermitRootLogin.*yes/PermitRootLogin no/" /etc/ssh/sshd_config && sudo systemctl restart ssh';
+                                    mockCmd = '$ sed -i "s/^PermitRootLogin.*yes/PermitRootLogin no/" /host_etc/ssh/sshd_config && sudo systemctl restart ssh';
                                 } else if (item.module_name === 'check_password_policy') {
-                                    mockCmd = '$ sudo sed -i "s/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   90/g" /etc/login.defs';
+                                    mockCmd = '$ sed -i "s/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   90/g" /host_etc/login.defs';
                                 } else if (item.module_name === 'check_firewall') {
-                                    mockCmd = '$ sudo ufw enable && sudo ufw default deny incoming';
+                                    mockCmd = '$ ufw enable && ufw default deny incoming';
                                 }
 
                                 diagRow = `

@@ -63,7 +63,7 @@ def trigger_scan():
             # Fallback chèn dữ liệu mẫu nếu chưa có main.sh để test giao diện
             conn = sqlite3.connect(DB_NAME)
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO scan_results (scan_time, module_name, risk_level, message) VALUES (datetime('now', 'localtime'), 'check_firewall', 'CRITICAL', 'Tường lửa UFW đang bị tắt. Trạng thái: Inactive.|sudo ufw enable')")
+            cursor.execute("INSERT INTO scan_results (scan_time, module_name, risk_level, message) VALUES (datetime('now', 'localtime'), 'check_firewall', 'CRITICAL', 'Tường lửa UFW đang bị tắt. Trạng thái: Inactive.|ufw enable')")
             cursor.execute("INSERT INTO scan_results (scan_time, module_name, risk_level, message) VALUES (datetime('now', 'localtime'), 'check_ssh', 'WARNING', 'Cấu hình SSH cho phép root login.|Sửa file /etc/ssh/sshd_config đổi thành PermitRootLogin no')")
             conn.commit()
             conn.close()

@@ -5,10 +5,13 @@
 #set -uo pipefail
 IFS=$'\n\t'
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Nạp thư viện lõi
-# shellcheck source=core/colors.sh
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export MY_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+
+
+# Nạp thư viện lõi shellcheck source=core/colors.sh
 source "${BASE_DIR}/core/colors.sh"
 # shellcheck source=core/logger.sh
 source "${BASE_DIR}/core/logger.sh"
@@ -42,7 +45,7 @@ record_result() {
     # BƯỚC SỬA LỖI SQL: Xóa sạch hoặc thay thế dấu nháy đơn (') thành nháy kép (")
     local CLEAN_MSG="${MSG//\'/\"}"
     
-    local DB_PATH="/home/project/OSG203_Security_Scanner/scanner.db"
+    local DB_PATH="${MY_PROJECT_DIR}/scanner.db"
     local TIME=$(date +"%Y-%m-%d %H:%M:%S")
     
     # Dùng CLEAN_MSG thay vì MSG để an toàn cho SQLite
@@ -123,7 +126,7 @@ MODULES=(
 
 for mod in "${MODULES[@]}"; do
     # Thay thế dòng MOD_PATH cũ bằng dòng khóa cứng này:
-    MOD_PATH="/home/project/OSG203_Security_Scanner/scripts/${mod}"
+    MOD_PATH="${MY_PROJECT_DIR}/scripts/${mod}"
     
     if [[ -f "${MOD_PATH}" ]]; then
         source "${MOD_PATH}"
